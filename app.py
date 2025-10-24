@@ -403,7 +403,6 @@ def delete_case(case_name):
         pass
     log(f"Caso eliminado: {case_name}")
     return jsonify({"ok": True})
-
 # ============================================================
 # 🚀 Arranque del servidor NACH-GPT LIMS
 # ============================================================
@@ -413,16 +412,16 @@ if __name__ == "__main__":
     log(f"Directorios: CASES_DIR={CASES_DIR}")
     log(f"Dropbox configurado: {DROPBOX_CONFIGURED}")
 
-        # diagnóstico de Dropbox
-    log("===== DIAGNÓSTICO DROPBOX =====")
-    log(f"App Key: {os.getenv('DROPBOX_APP_KEY', 'no encontrada')}")
-    log(f"App Secret: {'***' if os.getenv('DROPBOX_APP_SECRET') else 'no encontrada'}")
-    log(f"Refresh Token: {'***' if os.getenv('DROPBOX_REFRESH_TOKEN') else 'no encontrada'}")
-    log(f"Carpeta de Dropbox: {os.getenv('DROPBOX_FOLDER', 'no encontrada')}")
-    log(f"Dropbox configurado: {DROPBOX_CONFIGURED}")
-    log("================================")
+    # Solo mostrar diagnóstico de Dropbox en entorno local
+    if not os.getenv("RENDER"):  # Render define esta variable automáticamente
+        log("===== DIAGNÓSTICO DROPBOX =====")
+        log(f"App Key: {os.getenv('DROPBOX_APP_KEY', 'no encontrada')}")
+        log(f"App Secret: {'***' if os.getenv('DROPBOX_APP_SECRET') else 'no encontrada'}")
+        log(f"Refresh Token: {'***' if os.getenv('DROPBOX_REFRESH_TOKEN') else 'no encontrada'}")
+        log(f"Carpeta de Dropbox: {os.getenv('DROPBOX_FOLDER', 'no encontrada')}")
+        log(f"Dropbox configurado: {DROPBOX_CONFIGURED}")
+        log("================================")
 
-    
     # generar QR de casos existentes si faltan
     for p in Path(CASES_DIR).glob("*"):
         if p.is_dir():
@@ -436,4 +435,3 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     log(f"Iniciando servidor Flask en 0.0.0.0:{port}...")
     app.run(host="0.0.0.0", port=port)
-
