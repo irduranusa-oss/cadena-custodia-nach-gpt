@@ -1,5 +1,3 @@
-flask
-flask-cors
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
@@ -7,6 +5,7 @@ dropbox
 python-dotenv
 schedule
 requests
+flask
+flask-cors
 gunicorn
-qrcode[pil]
-
+qrcode
