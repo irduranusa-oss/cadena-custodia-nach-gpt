@@ -409,27 +409,20 @@ def delete_case(case_name):
 # ============================================================
 
 if __name__ == "__main__":
-    import os
-
     log("Arrancando NACH-GPT LIMS (con soporte de empleados/escaneo)")
     log(f"Directorios: CASES_DIR={CASES_DIR}")
     log(f"Dropbox configurado: {DROPBOX_CONFIGURED}")
 
-    # Generar QR de casos existentes si faltan
+    # generar QR de casos existentes si faltan
     for p in Path(CASES_DIR).glob("*"):
         if p.is_dir():
-            qr_path = QRS_DIR / f"{p.name}.png"
-            if not qr_path.exists():
+            if not (QRS_DIR / f"{p.name}.png").exists():
                 try:
                     generate_case_qr(p)
-                    log(f"QR generado para {p.name}")
                 except Exception as e:
-                    log(f"⚠️ Error generando QR para {p.name}: {e}")
+                    log(f"Error generando QR para {p.name}: {e}")
 
-    # Obtener puerto dinámico para Render o local
+    import os
     port = int(os.environ.get("PORT", 8000))
-    host = os.environ.get("HOST", "0.0.0.0")
-
-    log(f"Iniciando servidor Flask en {host}:{port}... 🌐")
-    app.run(host=host, port=port, debug=False)
-
+    log(f"Iniciando servidor Flask en 0.0.0.0:{port}...")
+    app.run(host="0.0.0.0", port=port)
