@@ -409,7 +409,7 @@ def delete_case(case_name):
 
 if __name__ == "__main__":
     log("Arrancando NACH-GPT LIMS (con soporte de empleados/escaneo)")
-    log(f"Directorios: CASES_DIR={CASES_DIR}")
+    log(f"Directorio local de casos: {CASES_DIR}")
     log(f"Dropbox configurado: {DROPBOX_CONFIGURED}")
 
     # Solo mostrar diagnóstico de Dropbox en entorno local
@@ -419,19 +419,34 @@ if __name__ == "__main__":
         log(f"App Secret: {'***' if os.getenv('DROPBOX_APP_SECRET') else 'no encontrada'}")
         log(f"Refresh Token: {'***' if os.getenv('DROPBOX_REFRESH_TOKEN') else 'no encontrada'}")
         log(f"Carpeta de Dropbox: {os.getenv('DROPBOX_FOLDER', 'no encontrada')}")
-        log(f"Dropbox configurado: {DROPBOX_CONFIGURED}")
         log("================================")
+
+        # subir los casos locales hacia Dropbox
+        try:
+            if DROPBOX_CONFIGURED:
+                log("📤 Subiendo casos locales a Dropbox...")
+                sync_local_to_dropbox()
+                log("✅ Casos sincronizados correctamente con Dropbox.")
+            else:
+                log("⚠ Dropbox no configurado, no se suben los casos.")
+        except Exception as e:
+            log(f"❌ Error al subir los casos a Dropbox: {e}")
+    else:
+        log("🟢 Entorno Render detectado: no se subirán ni bajarán casos, solo se servirán los datos existentes.")
 
     # generar QR de casos existentes si faltan
     for p in Path(CASES_DIR).glob("*"):
         if p.is_dir():
-            if not (QRS_DIR / f"{p.name}.png").exists():
+            qr_path = QRS_DIR / f"{p.name}.png"
+            if not qr_path.exists():
                 try:
                     generate_case_qr(p)
+                    log(f"✅ QR generado para {p.name}")
                 except Exception as e:
-                    log(f"Error generando QR para {p.name}: {e}")
+                    log(f"⚠ Error generando QR para {p.name}: {e}")
 
+    # arrancar servidor Flask
     import os
     port = int(os.environ.get("PORT", 8000))
-    log(f"Iniciando servidor Flask en 0.0.0.0:{port}...")
+    log(f"🚀 Iniciando servidor Flask en 0.0.0.0:{port}...")
     app.run(host="0.0.0.0", port=port)
