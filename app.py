@@ -404,28 +404,32 @@ def delete_case(case_name):
     log(f"Caso eliminado: {case_name}")
     return jsonify({"ok": True})
 
-# arrancar servidor
+# ============================================================
+# 🚀 Arranque del servidor NACH-GPT LIMS
+# ============================================================
+
 if __name__ == "__main__":
+    import os
+
     log("Arrancando NACH-GPT LIMS (con soporte de empleados/escaneo)")
     log(f"Directorios: CASES_DIR={CASES_DIR}")
     log(f"Dropbox configurado: {DROPBOX_CONFIGURED}")
 
-    # generar QR de casos existentes si faltan
+    # Generar QR de casos existentes si faltan
     for p in Path(CASES_DIR).glob("*"):
         if p.is_dir():
-            if not (QRS_DIR / f"{p.name}.png").exists():
+            qr_path = QRS_DIR / f"{p.name}.png"
+            if not qr_path.exists():
                 try:
                     generate_case_qr(p)
+                    log(f"QR generado para {p.name}")
                 except Exception as e:
-                    log(f"Error generando QR para {p.name}: {e}")
+                    log(f"⚠️ Error generando QR para {p.name}: {e}")
 
-    # obtener puerto dinámico para Render o local
-    import os
+    # Obtener puerto dinámico para Render o local
     port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "0.0.0.0")
 
-    # iniciar servidor Flask accesible desde cualquier lugar
-    log(f"Iniciando servidor Flask en puerto {port}...")
-    app.run(host="0.0.0.0", port=port)
-
-    app.run(host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")), debug=False)
+    log(f"Iniciando servidor Flask en {host}:{port}... 🌐")
+    app.run(host=host, port=port, debug=False)
 
