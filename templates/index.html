@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NACH-GPT — Cadena de Custodia Automática</title>
+<style>
+:root {
+  --oro: #d4af37;
+  --oro-brillo: linear-gradient(90deg, #c6a84f, #e5c76b, #b9962e);
+  --negro: #0a0a0a;
+  --gris: #1a1a1a;
+  --texto: #eee;
+}
+body {
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', Arial;
+  background: var(--negro);
+  color: var(--texto);
+}
+header {
+  background: var(--oro-brillo);
+  color: #000;
+  padding: 18px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 22px;
+  border-bottom: 2px solid #c6a84f;
+  text-shadow: 0 0 8px rgba(255, 240, 180, 0.8);
+}
+main {
+  max-width: 1400px;
+  margin: 22px auto;
+  padding: 18px;
+}
+button {
+  background: var(--oro-brillo);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin: 4px;
+}
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(200, 162, 77, 0.4);
+}
+button.small {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+#casesList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.caseCard {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid var(--oro);
+  box-shadow: 0 0 12px rgba(200,162,77,0.15);
+}
+.caseCard strong { 
+  color: var(--oro); 
+  font-size: 16px;
+  display: block;
+  margin-bottom: 8px;
+}
+.caseCard .case-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.phase-badge {
+  display: inline-block;
+  background: #333;
+  color: var(--oro);
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+}
+.worker-badge {
+  display: inline-block;
+  background: #2d5016;
+  color: #a8e6a8;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: bold;
+}
+.caseCard .qr-section {
+  text-align: center;
+  margin: 12px 0;
+  padding: 10px;
+  background: #000;
+  border-radius: 8px;
+}
+.caseCard img {
+  width: 100px;
+  height: 100px;
+  cursor: pointer;
+  border-radius: 8px;
+  border: 2px solid var(--oro);
+}
+.caseCard .buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.caseCard .tracking-url {
+  background: #1a3a1a;
+  padding: 6px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 10px;
+  word-break: break-all;
+  margin-top: 8px;
+  color: #90ee90;
+}
+form {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid #333;
+  margin-bottom: 22px;
+}
+label {
+  display: block;
+  color: var(--oro);
+  font-weight: 700;
+  margin-top: 10px;
+}
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #101010;
+  color: var(--texto);
+  margin-top: 6px;
+  box-sizing: border-box;
+}
+#logs {
+  background: #000;
+  color: #0f0;
+  font-family: monospace;
+  padding: 12px;
+  height: 180px;
+  overflow: auto;
+  border-radius: 8px;
+  border: 1px solid #333;
+  margin-top: 22px;
+  font-size: 12px;
+}
+.workflow-info {
+  background: #2a2a2a;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 15px 0;
+  border: 1px solid #444;
+}
+.workflow-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.step {
+  background: #333;
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  border: 1px solid #555;
+}
+.step.current {
+  background: var(--oro);
+  color: #000;
+  font-weight: bold;
+}
+.employee-qr-btn {
+  background: linear-gradient(90deg, #28a745, #20c997);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+  margin: 10px 0;
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+<header>🦷 NACH-GPT — Cadena de Custodia Automática</header>
+<main>
+  <!-- BOTÓN PARA QR DE EMPLEADOS -->
+  <button class="employee-qr-btn" onclick="window.open('/local_auto_qr', '_blank')">
+    📱 ABRIR CÓDIGOS QR DE EMPLEADOS
+  </button>
+
+  <form id="newCaseForm" enctype="multipart/form-data">
+    <h3 style="color:var(--oro); margin-top:0">➕ Crear Nuevo Caso</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+      <div>
+        <label>Paciente *</label><input name="paciente" required>
+        <label>Pieza</label><input name="pieza">
+        <label>Material</label><input name="material" value="Zirconia Híbrido">
+      </div>
+      <div>
+        <label>Origen</label><input name="origen">
+        <label>Prioridad</label>
+        <select name="prioridad">
+          <option>Normal</option>
+          <option>Alta</option>
+          <option>Urgente</option>
+        </select>
+        <label>Fecha objetivo</label><input type="date" name="fecha">
+      </div>
+    </div>
+    <label>Notas</label><textarea name="notas" rows="2" placeholder="Instrucciones especiales..."></textarea>
+    <label>Archivos (STL, ZIP, TXT, fotos...)</label>
+    <input type="file" name="archivos" multiple>
+    <div style="margin-top:15px; text-align: center;">
+      <button type="submit" style="padding: 12px 24px; font-size: 16px;">💾 Crear Caso y Generar QR</button>
+    </div>
+  </form>
+
+  <div class="workflow-info">
+    <h3 style="color:var(--oro); margin-top:0; text-align: center;">📋 Flujo de Trabajo Automático</h3>
+    <div class="workflow-steps">
+      <div class="step">📦 RECIBIDO</div>
+      <div class="step">🔄 NESTEO</div>
+      <div class="step">⚙️ FRESADO</div>
+      <div class="step">🔥 SINTERIZADO</div>
+      <div class="step">🎨 PORCELANA</div>
+      <div class="step">🧪 CEMENTADO</div>
+      <div class="step">✅ CALIDAD</div>
+      <div class="step">🚚 ENVIADO</div>
+    </div>
+    <p style="text-align: center; margin-top: 10px; color: #aaa;">
+      <strong>¿Cómo funciona?</strong> Empleados escanean su QR personal → Escanean QR del caso → ¡Registro automático!
+    </p>
+  </div>
+
+  <div id="casesList"></div>
+  <div id="logs"></div>
+</main>
+
+<script>
+async function getJSON(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    console.error("Error cargando JSON:", e);
+    return null;
+  }
+}
+
+document.getElementById('newCaseForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const res = await fetch('/new_case', { method: 'POST', body: formData });
+  const data = await res.json();
+  if (res.ok) {
+    alert('✅ Caso creado\n📱 QR generado para cadena de custodia');
+    e.target.reset();
+    refreshCases();
+  } else {
+    alert('⚠ Error: ' + (data.msg || 'Error desconocido'));
+  }
+});
+
+async function refreshCases() {
+  const j = await getJSON('/cases');
+  if (!j) return;
+  const container = document.getElementById('casesList');
+  container.innerHTML = '';
+  
+  for (const c of j.cases) {
+    const el = document.createElement('div');
+    el.className = 'caseCard';
+    
+    el.innerHTML = `
+      <strong>${escapeHTML(c.name)}</strong>
+      <div class="case-info">
+        <span class="phase-badge">${c.phase}</span>
+        <span class="worker-badge">—</span>
+        <small style="color:#aaa">📊 ${c.events_count} reg • 📅 ${c.last_updated}</small>
+      </div>
+      
+      <div class="qr-section">
+        ${c.qr_url ? 
+          `<img src="${c.qr_url}" alt="QR" onclick="openTracking('${encodeURIComponent(c.name)}')" title="Click para abrir seguimiento">` : 
+          `<div style="color:#ff6b6b; padding:20px;">❌ QR no generado</div>`
+        }
+      </div>
+      
+      <div class="tracking-url">📱 /case_track/${encodeURIComponent(c.name)}</div>
+      
+      <div class="buttons">
+        <button class="small" onclick="openTracking('${encodeURIComponent(c.name)}')">📱 Registrar</button>
+        <button class="small" onclick="openFolder('${encodeURIComponent(c.path)}')">📁 Carpeta</button>
+        <button class="small" onclick="viewDetails('${encodeURIComponent(c.name)}')">👁 Detalles</button>
+        <button class="small" onclick="deleteCase('${encodeURIComponent(c.name)}')" style="background:#ff6b6b;">🗑 Eliminar</button>
+      </div>
+    `;
+    container.appendChild(el);
+  }
+}
+
+function escapeHTML(s) {
+  return (s || '').replace(/[&<>"']/g, ch => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]
+  ));
+}
+
+function openTracking(encodedName) {
+  const name = decodeURIComponent(encodedName);
+  window.open('/case_track/' + encodeURIComponent(name), '_blank');
+}
+
+async function openFolder(encodedPath) {
+  const path = decodeURIComponent(encodedPath);
+  await fetch('/open_folder', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({path})
+  });
+}
+
+function viewDetails(encodedName) {
+  const name = decodeURIComponent(encodedName);
+  window.open('/case/' + encodeURIComponent(name), '_blank');
+}
+
+async function deleteCase(encodedName) {
+  const name = decodeURIComponent(encodedName);
+  if (!confirm('¿Eliminar caso "' + name + '" y todo su historial?')) return;
+  await fetch('/case/' + encodedName, { method: 'DELETE' });
+  refreshCases();
+}
+
+async function loadLogs() {
+  const j = await getJSON('/logs');
+  if (!j) return;
+  const box = document.getElementById('logs');
+  box.innerHTML = j.lines.map(l => `<div>${escapeHTML(l)}</div>`).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+// Actualizar cada 20 segundos
+setInterval(refreshCases, 20000);
+setInterval(loadLogs, 30000);
+refreshCases();
+loadLogs();
+</script>
+</body>
+</html>
