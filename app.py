@@ -409,12 +409,23 @@ if __name__ == "__main__":
     log("Arrancando NACH-GPT LIMS (con soporte de empleados/escaneo)")
     log(f"Directorios: CASES_DIR={CASES_DIR}")
     log(f"Dropbox configurado: {DROPBOX_CONFIGURED}")
+
     # generar QR de casos existentes si faltan
     for p in Path(CASES_DIR).glob("*"):
         if p.is_dir():
             if not (QRS_DIR / f"{p.name}.png").exists():
                 try:
                     generate_case_qr(p)
-                except Exception:
-                    pass
+                except Exception as e:
+                    log(f"Error generando QR para {p.name}: {e}")
+
+    # obtener puerto dinámico para Render o local
+    import os
+    port = int(os.environ.get("PORT", 8000))
+
+    # iniciar servidor Flask accesible desde cualquier lugar
+    log(f"Iniciando servidor Flask en puerto {port}...")
+    app.run(host="0.0.0.0", port=port)
+
     app.run(host=os.getenv("HOST", "127.0.0.1"), port=int(os.getenv("PORT", "8000")), debug=False)
+
