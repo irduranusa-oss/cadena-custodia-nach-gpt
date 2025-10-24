@@ -8,3 +8,5 @@ python-dotenv
 schedule
 requests
 gunicorn
+qrcode[pil]
+
